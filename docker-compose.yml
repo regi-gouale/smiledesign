@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: db_store
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+      - POSTGRES_DB=${PG_DB}
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+    restart: always
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    volumes:
+      - meilisearch_data:/data.ms
+    env_file:
+      - .env
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_NO_ANALYTICS=${MEILI_NO_ANALYTICS}
+      - MEILI_ENV=${MEILI_ENV}
+      - MEILI_DB_PATH=${MEILI_DB_PATH}
+      - MEILI_LOG_LEVEL=${MEILI_LOG_LEVEL}
+      # - MEILI_HTTP_ADDR=${MEILI_HTTP_ADDR}
+    depends_on:
+      - db
+    ports:
+      - "7700:7700"
+    networks:
+      - backend
+      - web
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  meilisearch_data:
+
+networks:
+  backend:
+    external: true
+  web:
+    external: true
