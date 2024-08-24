@@ -31,7 +31,7 @@ const STORE_CORS = process.env.STORE_CORS || "http://localhost:8000";
 const DATABASE_URL =
   process.env.DATABASE_URL || "postgres://localhost/medusa-starter-default";
 
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const REDIS_URL = process.env.CACHE_REDIS_URL || "redis://localhost:6379";
 
 const plugins = [
   `medusa-fulfillment-manual`,
@@ -52,21 +52,47 @@ const plugins = [
       },
     },
   },
+  {
+    resolve: `medusa-plugin-meilisearch`,
+    options: {
+      config: {
+        host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
+        apiKey: process.env.MEILISEARCH_API_KEY || "masterKey",
+      },
+      settings: {
+        products: {
+          indexSettings: {
+            searchableAttributes: ["title", "description", "variant_sku"],
+            displayedAttributes: [
+              "id",
+              "title",
+              "description",
+              "variant_sku",
+              "thumbnail",
+              "handle",
+            ],
+          },
+          primaryKey: "id",
+        },
+      },
+    },
+  },
 ];
 
 const modules = {
-  /*eventBus: {
+  eventBus: {
     resolve: "@medusajs/event-bus-redis",
     options: {
-      redisUrl: REDIS_URL
-    }
+      redisUrl: REDIS_URL,
+    },
   },
   cacheService: {
     resolve: "@medusajs/cache-redis",
     options: {
-      redisUrl: REDIS_URL
-    }
-  },*/
+      redisUrl: REDIS_URL,
+      ttl: 30,
+    },
+  },
 };
 
 /** @type {import('@medusajs/medusa').ConfigModule["projectConfig"]} */
